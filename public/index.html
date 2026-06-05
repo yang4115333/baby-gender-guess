@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🍼 宝宝性别大猜想</title>
+<style>
+:root{
+  --pink:#ff7eb3;--pink-dark:#ff5a95;--blue:#74b9ff;--blue-dark:#0984e3;
+  --mint:#55efc4;--yellow:#fdcb6e;--purple:#a29bfe;--peach:#fab1a0;
+  --lavender:#dfe6e9;--coral:#ff7675;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  min-height:100vh;min-height:100dvh;
+  overflow-x:hidden;-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(170deg,#fff9f0 0%,#fff0f5 35%,#f0f0ff 65%,#f0faff 100%);
+}
+
+/* ===== CLOUDS ===== */
+.clouds{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.cloud{position:absolute;background:white;border-radius:50%;opacity:0.35;filter:blur(1px)}
+.cloud::before,.cloud::after{content:'';position:absolute;background:white;border-radius:50%}
+.cloud-1{width:90px;height:40px;top:8%;left:-100px;animation:driftRight 30s linear infinite}
+.cloud-1::before{width:50px;height:50px;top:-25px;left:15px}
+.cloud-1::after{width:60px;height:45px;top:-20px;left:40px}
+.cloud-2{width:70px;height:30px;top:18%;left:-80px;animation:driftRight 40s linear 5s infinite}
+.cloud-2::before{width:40px;height:40px;top:-20px;left:10px}
+.cloud-2::after{width:50px;height:35px;top:-15px;left:30px}
+.cloud-3{width:110px;height:45px;top:6%;left:-120px;animation:driftRight 35s linear 15s infinite}
+.cloud-3::before{width:60px;height:55px;top:-28px;left:20px}
+.cloud-3::after{width:70px;height:50px;top:-22px;left:50px}
+@keyframes driftRight{from{transform:translateX(-150px)}to{transform:translateX(calc(100vw + 200px))}}
+
+/* ===== SPARKLES ===== */
+.sparkle-field{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.sparkle{position:absolute;width:6px;height:6px;border-radius:50%;animation:twinkle ease-in-out infinite}
+.sparkle.star{border-radius:0;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);width:12px;height:12px}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(0.5) rotate(0deg)}50%{opacity:1;transform:scale(1.2) rotate(180deg)}}
+
+/* ===== RAINBOW ARCH ===== */
+.rainbow{position:fixed;top:-60%;left:50%;transform:translateX(-50%);width:200vw;height:200vw;
+  border-radius:50%;pointer-events:none;z-index:0;opacity:0.06;
+  background:conic-gradient(from 180deg,
+    var(--coral) 0deg,var(--peach) 20deg,var(--yellow) 40deg,
+    var(--mint) 60deg,var(--blue) 80deg,var(--purple) 100deg,
+    var(--pink) 120deg,transparent 140deg);
+}
+
+/* ===== SCREENS ===== */
+.screen{display:none;min-height:100vh;min-height:100dvh;padding:2rem 1.5rem;
+  position:relative;z-index:2;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center}
+.screen.active{display:flex;animation:screenIn 0.7s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes screenIn{from{opacity:0;transform:translateY(40px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ===== COMMON ===== */
+.btn{display:inline-block;padding:1rem 2.5rem;border-radius:50px;border:none;
+  font-size:1.1rem;font-weight:700;cursor:pointer;transition:all 0.3s;
+  -webkit-tap-highlight-color:transparent;font-family:inherit;position:relative;overflow:hidden}
+.btn:active{transform:scale(0.92)!important}
+
+.btn-candy{background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  color:white;box-shadow:0 6px 25px rgba(162,155,254,0.4);
+  animation:wobble 3s ease-in-out infinite,glow-pulse 2s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(0deg)}15%{transform:rotate(3deg)}30%{transform:rotate(-3deg)}45%{transform:rotate(2deg)}60%{transform:rotate(0deg)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 6px 25px rgba(162,155,254,0.4)}50%{box-shadow:0 6px 40px rgba(162,155,254,0.65)}}
+.btn-candy:hover{transform:translateY(-3px) scale(1.03)}
+
+.btn-golden{background:linear-gradient(135deg,#fdcb6e,#f39c12,#e17055);
+  color:white;box-shadow:0 6px 25px rgba(253,203,110,0.5);
+  animation:wobble 2.5s ease-in-out infinite,gold-glow 2s ease-in-out infinite}
+@keyframes gold-glow{0%,100%{box-shadow:0 6px 25px rgba(253,203,110,0.5)}50%{box-shadow:0 6px 45px rgba(253,203,110,0.8)}}
+
+.btn-sm{padding:0.6rem 1.5rem;font-size:0.9rem;border-radius:20px;
+  background:linear-gradient(135deg,var(--pink),var(--purple));color:white;
+  box-shadow:0 4px 15px rgba(162,155,254,0.3);border:none;cursor:pointer;
+  font-family:inherit;font-weight:600;transition:all 0.3s}
+.btn-sm:hover{transform:translateY(-2px)}
+
+.section-tag{font-size:0.8rem;color:#c0a0c0;letter-spacing:4px;margin-bottom:1rem;
+  font-weight:600;position:relative;display:inline-block}
+.section-tag::before,.section-tag::after{content:'✦';margin:0 6px;font-size:0.7rem}
+
+/* ===== SCREEN 1: LANDING ===== */
+.hero-wrap{position:relative;margin-bottom:0.5rem}
+.hero-baby{font-size:6rem;display:inline-block;animation:float 3s ease-in-out infinite;
+  filter:drop-shadow(0 10px 20px rgba(255,126,179,0.3))}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+.hero-star{position:absolute;font-size:1.5rem;animation:starSpin 3s linear infinite}
+.hero-star:nth-child(2){top:-10px;right:-20px;animation-delay:0s}
+.hero-star:nth-child(3){top:20px;left:-25px;animation-delay:1s;font-size:1rem}
+.hero-star:nth-child(4){bottom:10px;right:-15px;animation-delay:2s;font-size:1.2rem}
+@keyframes starSpin{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.3)}100%{transform:rotate(360deg) scale(1)}}
+
+.hero-title{font-size:2rem;font-weight:900;margin-bottom:0.5rem;
+  background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:titleBounce 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes titleBounce{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+.hero-sub{font-size:1.05rem;color:#b0a0b0;line-height:2;margin-bottom:2rem;max-width:300px}
+.hero-sub strong{color:#888}
+.hero-hearts{display:flex;gap:0.5rem;justify-content:center;margin-bottom:2rem;font-size:1.5rem}
+.hero-hearts span{animation:heartPop 1.5s ease-in-out infinite;display:inline-block}
+.hero-hearts span:nth-child(1){animation-delay:0s}
+.hero-hearts span:nth-child(2){animation-delay:0.2s}
+.hero-hearts span:nth-child(3){animation-delay:0.4s}
+.hero-hearts span:nth-child(4){animation-delay:0.6s}
+.hero-hearts span:nth-child(5){animation-delay:0.8s}
+@keyframes heartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+/* ===== SCREEN 2: NAME ===== */
+.name-title{font-size:1.4rem;font-weight:800;color:#7f6f8f;margin-bottom:0.5rem}
+.name-subtitle{font-size:0.95rem;color:#c0b0c0;margin-bottom:1.8rem}
+.input-wrap{position:relative;width:100%;max-width:300px;margin-bottom:1.8rem}
+.input-name{width:100%;padding:1.1rem 1.5rem;border:3px solid #f0e0f0;border-radius:22px;
+  font-size:1.15rem;text-align:center;outline:none;transition:all 0.4s;
+  background:rgba(255,255,255,0.95);font-family:inherit;
+  box-shadow:0 4px 15px rgba(162,155,254,0.08)}
+.input-name:focus{border-color:var(--purple);
+  box-shadow:0 4px 25px rgba(162,155,254,0.2),0 0 0 5px rgba(162,155,254,0.08)}
+.input-name::placeholder{color:#ddd}
+.cute-face{font-size:2rem;margin-bottom:1rem;animation:peekaboo 2s ease-in-out infinite}
+@keyframes peekaboo{0%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}60%{transform:translateY(0)}}
+
+/* ===== SCREEN 3: VOTE ===== */
+.vote-greeting{font-size:1.2rem;font-weight:700;color:#7f6f8f;margin-bottom:0.3rem}
+.vote-title{font-size:1.5rem;font-weight:800;color:#888;margin-bottom:0.5rem}
+.vote-subtitle{font-size:0.9rem;color:#c0b0c0;margin-bottom:2rem}
+
+.vote-cards{display:flex;gap:1.2rem;width:100%;max-width:380px}
+.vote-card{flex:1;padding:2rem 0.8rem 1.8rem;border-radius:28px;text-align:center;
+  cursor:pointer;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  border:3px solid transparent;background:rgba(255,255,255,0.95);
+  box-shadow:0 6px 25px rgba(0,0,0,0.06);position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent}
+.vote-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  border-radius:28px 28px 0 0;transition:height 0.3s}
+.vote-card.boy::before{background:linear-gradient(90deg,var(--blue),var(--mint))}
+.vote-card.girl::before{background:linear-gradient(90deg,var(--pink),var(--peach))}
+.vote-card:active{transform:scale(0.93)!important}
+.vote-card.boy:hover,.vote-card.boy.touched{background:linear-gradient(180deg,#e8f4ff,#f0f8ff);
+  border-color:var(--blue);transform:translateY(-6px) rotate(-1deg);
+  box-shadow:0 12px 35px rgba(116,185,255,0.25)}
+.vote-card.girl:hover,.vote-card.girl.touched{background:linear-gradient(180deg,#fff0f5,#fff5f8);
+  border-color:var(--pink);transform:translateY(-6px) rotate(1deg);
+  box-shadow:0 12px 35px rgba(255,126,179,0.25)}
+.vote-card:hover::before{height:6px}
+
+.vote-emoji{font-size:4.5rem;margin-bottom:0.6rem;display:block;transition:all 0.4s;
+  animation:emojiBob 3s ease-in-out infinite}
+.vote-card:nth-child(1) .vote-emoji{animation-delay:0s}
+.vote-card:nth-child(2) .vote-emoji{animation-delay:0.5s}
+@keyframes emojiBob{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(-5deg)}75%{transform:translateY(-4px) rotate(5deg)}}
+.vote-card:hover .vote-emoji{animation:none;transform:scale(1.2) rotate(-8deg)}
+
+.vote-label{font-size:1.3rem;font-weight:800;position:relative}
+.vote-card.boy .vote-label{color:var(--blue-dark)}
+.vote-card.girl .vote-label{color:var(--pink-dark)}
+.vote-label small{display:block;font-size:0.75rem;font-weight:500;opacity:0.6;margin-top:2px}
+
+.vote-hint{font-size:0.85rem;color:#d0c0d0;margin-top:1.5rem;
+  animation:hintPulse 2s ease-in-out infinite}
+@keyframes hintPulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* ===== SCREEN 4: CONFIRMED ===== */
+.confirm-icon{font-size:5rem;margin-bottom:0.8rem;
+  animation:confirmBounce 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes confirmBounce{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0deg)}}
+.confirm-name{font-size:1.1rem;color:#bbb;margin-bottom:0.2rem}
+.confirm-choice{font-size:1.8rem;font-weight:900;margin-bottom:0.3rem}
+.confirm-choice.boy{color:var(--blue-dark)}
+.confirm-choice.girl{color:var(--pink-dark)}
+.confirm-stamp{display:inline-block;padding:0.5rem 1.5rem;border:2px dashed #e0d0e0;
+  border-radius:12px;color:#ccc;font-size:0.85rem;margin-top:0.5rem;
+  background:rgba(255,255,255,0.5)}
+
+.waiting-box{margin-top:2.5rem;padding:2rem 1.5rem;
+  background:rgba(255,255,255,0.7);border-radius:20px;max-width:300px;
+  backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.8)}
+.waiting-icons{font-size:2.5rem;margin-bottom:0.8rem;letter-spacing:0.3rem;
+  animation:floatEven 2.5s ease-in-out infinite}
+@keyframes floatEven{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.waiting-text{font-size:0.95rem;color:#bbb;line-height:1.8}
+
+.btn-change{margin-top:1.5rem;padding:0.7rem 1.8rem;background:none;
+  border:2px solid #e8e0e8;border-radius:25px;color:#ccc;font-size:0.9rem;
+  cursor:pointer;font-family:inherit;transition:all 0.3s}
+.btn-change:hover{border-color:#c0b0c0;color:#aaa}
+
+/* ===== SCREEN 5: COUNTDOWN ===== */
+.countdown-wrap{position:relative}
+.countdown-num{font-size:10rem;font-weight:900;
+  background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:countBoom 0.7s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes countBoom{0%{transform:scale(3) rotate(10deg);opacity:0}40%{transform:scale(0.8) rotate(-3deg)}70%{transform:scale(1.05) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.countdown-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:180px;height:180px;border-radius:50%;
+  border:4px solid rgba(162,155,254,0.2);
+  animation:ringPulse 0.9s ease-out}
+@keyframes ringPulse{from{transform:translate(-50%,-50%) scale(0.5);opacity:1}to{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+
+/* ===== SCREEN 6: RESULT ===== */
+.result-emoji{font-size:7rem;margin-bottom:0.8rem;
+  animation:resultPop 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes resultPop{0%{transform:scale(0) rotate(-30deg)}50%{transform:scale(1.2) rotate(10deg)}70%{transform:scale(0.95) rotate(-3deg)}100%{transform:scale(1) rotate(0deg)}}
+.result-title{font-size:1.8rem;font-weight:900;margin-bottom:0.3rem}
+.result-correct{background:linear-gradient(135deg,#55efc4,#00b894);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.result-wrong{color:var(--peach)}
+.result-answer{font-size:1.15rem;color:#aaa;margin-bottom:1rem;line-height:1.8}
+
+.prize-box{margin-top:1.2rem;padding:2rem 1.5rem;
+  background:linear-gradient(135deg,#fffbe6,#fff3cd,#ffe0ec);
+  border-radius:24px;border:3px solid var(--yellow);max-width:320px;width:100%;
+  animation:prizeIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  box-shadow:0 10px 40px rgba(253,203,110,0.3);position:relative;overflow:hidden}
+.prize-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(transparent,rgba(255,255,255,0.3),transparent,transparent);
+  animation:shimmer 3s linear infinite}
+@keyframes shimmer{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes prizeIn{from{transform:scale(0) rotate(-10deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.prize-title{font-size:2.5rem;margin-bottom:0.5rem}
+.prize-text{font-size:1.1rem;font-weight:700;color:#8b6914;line-height:1.8;position:relative;z-index:1}
+
+.consolation-box{margin-top:1.2rem;padding:2rem 1.5rem;
+  background:rgba(255,255,255,0.8);border-radius:20px;max-width:300px;
+  animation:prizeIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.8)}
+.consolation-text{font-size:1rem;color:#999;line-height:1.8}
+.consolation-emoji{font-size:2.5rem;margin-bottom:0.5rem;
+  animation:floatEven 2.5s ease-in-out infinite}
+
+/* ===== STATS (Result screen) ===== */
+.stats-section{margin-top:2rem;width:100%;max-width:340px;
+  animation:prizeIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.6s both}
+.stats-title{font-size:1.1rem;font-weight:800;color:#8f7f9f;margin-bottom:1rem}
+.stats-title span{margin:0 4px}
+
+.stats-bar-wrap{margin-bottom:1rem}
+.stats-bar-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;font-size:0.95rem}
+.stats-bar-label .emoji{font-size:1.3rem}
+.stats-bar-label .count{font-weight:700;font-size:0.9rem}
+.stats-bar-label .count.boy-count{color:var(--blue-dark)}
+.stats-bar-label .count.girl-count{color:var(--pink-dark)}
+
+.stats-bar{height:28px;border-radius:14px;background:#f0e8f0;overflow:hidden;position:relative}
+.stats-bar-fill{height:100%;border-radius:14px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1);position:relative;min-width:30px}
+.stats-bar-fill.boy{background:linear-gradient(90deg,var(--blue),var(--mint))}
+.stats-bar-fill.girl{background:linear-gradient(90deg,var(--pink),var(--peach))}
+.stats-bar-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:30px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3));border-radius:0 14px 14px 0}
+
+.stats-total{text-align:center;font-size:0.85rem;color:#c0b0c0;margin-top:0.5rem}
+
+/* Voter list */
+.voter-list{margin-top:1.2rem;padding:1.2rem;background:rgba(255,255,255,0.6);
+  border-radius:16px;max-height:5.6rem;overflow-y:auto;text-align:left}
+.voter-list::-webkit-scrollbar{width:4px}
+.voter-list::-webkit-scrollbar-thumb{background:#e0d0e0;border-radius:2px}
+.voter-item{display:flex;align-items:center;padding:0.4rem 0;font-size:0.85rem;color:#999;
+  border-bottom:1px solid rgba(0,0,0,0.03)}
+.voter-item:last-child{border-bottom:none}
+.voter-item .voter-emoji{margin-right:0.5rem;font-size:1rem}
+.voter-item .voter-name{flex:1}
+.voter-item .voter-choice{font-weight:600;font-size:0.8rem}
+.voter-item .voter-choice.boy{color:var(--blue-dark)}
+.voter-item .voter-choice.girl{color:var(--pink-dark)}
+.voter-item .voter-winner{margin-left:0.4rem;font-size:0.9rem;animation:heartPop 1s ease-in-out infinite}
+
+/* ===== BLESSING WALL ===== */
+.blessing-section{margin-top:2rem;width:100%;max-width:360px;
+  animation:prizeIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.5s both}
+.blessing-title{font-size:1.1rem;font-weight:800;color:#8f7f9f;margin-bottom:1rem}
+.blessing-title span{margin:0 4px}
+
+.blessing-chat{background:rgba(255,255,255,0.6);border-radius:20px;padding:1rem;
+  max-height:260px;overflow-y:auto;backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.8)}
+.blessing-chat::-webkit-scrollbar{width:4px}
+.blessing-chat::-webkit-scrollbar-thumb{background:#e0d0e0;border-radius:2px}
+.blessing-empty{text-align:center;color:#ccc;font-size:0.9rem;padding:1.5rem 0}
+
+.blessing-bubble{padding:0.8rem 1rem;margin-bottom:0.8rem;background:white;
+  border-radius:16px;border-top-left-radius:4px;text-align:left;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);animation:bubbleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(10px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.blessing-bubble .bb-header{display:flex;align-items:center;margin-bottom:0.3rem}
+.blessing-bubble .bb-avatar{font-size:1.2rem;margin-right:0.4rem}
+.blessing-bubble .bb-name{font-weight:700;font-size:0.85rem;color:#7f6f8f}
+.blessing-bubble .bb-time{font-size:0.7rem;color:#ccc;margin-left:auto}
+.blessing-bubble .bb-text{font-size:0.9rem;color:#666;line-height:1.6}
+
+.blessing-input-wrap{display:flex;gap:0.5rem;margin-top:0.8rem;align-items:flex-end}
+.blessing-input{flex:1;padding:0.7rem 1rem;border:2px solid #f0e0f0;border-radius:20px;
+  font-size:0.9rem;outline:none;font-family:inherit;resize:none;
+  background:rgba(255,255,255,0.95);transition:all 0.3s;min-height:40px;max-height:80px}
+.blessing-input:focus{border-color:var(--purple);box-shadow:0 2px 12px rgba(162,155,254,0.15)}
+.blessing-input::placeholder{color:#ddd}
+.blessing-send{width:40px;height:40px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--pink),var(--purple));color:white;
+  font-size:1.2rem;cursor:pointer;transition:all 0.3s;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center}
+.blessing-send:active{transform:scale(0.9)}
+.blessing-send:disabled{opacity:0.4;cursor:default}
+
+/* ===== CONFETTI ===== */
+#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:360px){
+  .hero-title{font-size:1.6rem}
+  .hero-baby{font-size:4.5rem}
+  .vote-cards{gap:0.8rem}
+  .vote-card{padding:1.5rem 0.6rem 1.3rem;border-radius:22px}
+  .vote-emoji{font-size:3.5rem}
+  .countdown-num{font-size:7rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="rainbow"></div>
+<div class="clouds">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+</div>
+<div class="sparkle-field" id="sparkles"></div>
+
+<!-- Confetti -->
+<canvas id="confetti"></canvas>
+
+<!-- ===== SCREEN 1: LANDING ===== -->
+<div class="screen active" id="screen-landing">
+  <div class="section-tag">好消息来啦</div>
+  <div class="hero-wrap">
+    <span class="hero-star">⭐</span>
+    <span class="hero-star">✨</span>
+    <span class="hero-star">💫</span>
+    <img src="hero-placeholder.svg" style="width:180px;border-radius:20px;box-shadow:0 8px 30px rgba(255,126,179,0.3);animation:float 3s ease-in-out infinite">
+    <span class="hero-star">🌟</span>
+  </div>
+  <div class="hero-title">宝宝要来啦！</div>
+  <div class="hero-hearts">
+    <span>💕</span><span>🎀</span><span>🍼</span><span>🧸</span><span>💖</span>
+  </div>
+  <div class="hero-sub">
+    <strong>小杨和小余的洋芋坨</strong><br>马上要来到这个世界啦<br>
+    是帅气的小王子 👦🏻<br>
+    还是可爱的小公主 👧🏻<br>
+    快来猜猜看吧！
+  </div>
+  <button class="btn btn-candy" onclick="goToScreen('screen-name')">🎀 开始猜猜看 🎀</button>
+</div>
+
+<!-- ===== SCREEN 2: NAME ===== -->
+<div class="screen" id="screen-name">
+  <div class="section-tag">Step 1</div>
+  <div class="cute-face">🥰</div>
+  <div class="name-title">先告诉大家你是谁</div>
+  <div class="name-subtitle">输入你的名字，让大家知道你猜了啥~<br><small style="color:#d0c0d0;font-size:0.8rem">名字可作为ID登录查看已投票结果</small></div>
+  <div class="input-wrap">
+    <input class="input-name" id="inputName" type="text" placeholder="✏️ 你的名字" maxlength="20" autocomplete="off">
+  </div>
+  <button class="btn btn-candy" onclick="submitName()">好啦，下一步 →</button>
+</div>
+
+<!-- ===== SCREEN 3: VOTE ===== -->
+<div class="screen" id="screen-vote">
+  <div class="section-tag">Step 2</div>
+  <div class="vote-greeting" id="voteGreeting"></div>
+  <div class="vote-title">你觉得宝宝是…</div>
+  <div class="vote-subtitle">选一个吧，大胆猜！💫</div>
+  <div class="vote-cards">
+    <div class="vote-card boy" onclick="castVote('boy')">
+      <span class="vote-emoji">👦🏻</span>
+      <div class="vote-label">小王子<small>💙 蓝蓝的</small></div>
+    </div>
+    <div class="vote-card girl" onclick="castVote('girl')">
+      <span class="vote-emoji">👧🏻</span>
+      <div class="vote-label">小公主<small>💗 粉粉的</small></div>
+    </div>
+  </div>
+  <div class="vote-hint">👆 点一点，选一个~</div>
+</div>
+
+<!-- ===== SCREEN 4: CONFIRMED ===== -->
+<div class="screen" id="screen-confirmed">
+  <div class="section-tag">投票成功</div>
+  <div class="confirm-icon" id="confirmIcon"></div>
+  <div class="confirm-name" id="confirmName"></div>
+  <div class="confirm-choice" id="confirmChoice"></div>
+  <div class="confirm-stamp" id="confirmStamp"></div>
+
+  <div class="waiting-box" id="waitingBox">
+    <div class="waiting-icons">🎀🍼🧸</div>
+    <div class="waiting-text">
+      宝宝还在妈妈肚子里成长中…<br>
+      答案揭晓后这里会出现按钮哦！<br>
+      耐心等待吧 🤫
+    </div>
+  </div>
+
+  <div class="stats-section" id="confirmedStats" style="margin-top:2rem;animation:prizeIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both">
+    <div class="stats-title"><span>📊</span> 大家都猜了啥 <span>👀</span></div>
+    <div id="confirmedStatsBars">
+      <div class="stats-bar-wrap">
+        <div class="stats-bar-label">
+          <span class="emoji">👦🏻</span><span>小王子</span>
+          <span class="count boy-count" id="cBoyCount">0 票</span>
+        </div>
+        <div class="stats-bar"><div class="stats-bar-fill boy" id="cBoyBar" style="width:0%"></div></div>
+      </div>
+      <div class="stats-bar-wrap">
+        <div class="stats-bar-label">
+          <span class="emoji">👧🏻</span><span>小公主</span>
+          <span class="count girl-count" id="cGirlCount">0 票</span>
+        </div>
+        <div class="stats-bar"><div class="stats-bar-fill girl" id="cGirlBar" style="width:0%"></div></div>
+      </div>
+      <div class="stats-total" id="cStatsTotal">共 0 人参与投票</div>
+    </div>
+    <div class="voter-list" id="cVoterList"></div>
+  </div>
+
+  <!-- Blessing Wall -->
+  <div class="blessing-section" id="blessingSection">
+    <div class="blessing-title"><span>💌</span> 祝福墙 <span>💌</span></div>
+    <div class="blessing-chat" id="blessingChat">
+      <div class="blessing-empty" id="blessingEmpty">写下你对宝宝的祝福吧~ ✨</div>
+    </div>
+    <div class="blessing-input-wrap">
+      <textarea class="blessing-input" id="blessingInput" placeholder="写下你的祝福... 💕" maxlength="200" rows="1"></textarea>
+      <button class="blessing-send" id="blessingSend" onclick="submitBlessing()">💌</button>
+    </div>
+  </div>
+
+  <button class="btn btn-golden" id="btnReveal" style="display:none;margin-top:1.5rem" onclick="startReveal()">🌟 揭晓答案 🌟</button>
+  <button class="btn-change" onclick="changeVote()">↩️ 我改主意了</button>
+</div>
+
+<!-- ===== SCREEN 5: COUNTDOWN ===== -->
+<div class="screen" id="screen-countdown">
+  <div class="countdown-wrap">
+    <div class="countdown-ring"></div>
+    <div class="countdown-num" id="countdownNum">3</div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 6: RESULT ===== -->
+<div class="screen" id="screen-result">
+  <div class="section-tag">答案揭晓</div>
+  <div class="result-emoji" id="resultEmoji"></div>
+  <div class="result-title" id="resultTitle"></div>
+  <div class="result-answer" id="resultAnswer"></div>
+  <div id="resultBody"></div>
+
+  <!-- Stats section -->
+  <div class="stats-section" id="statsSection">
+    <div class="stats-title"><span>📊</span> 大家都猜了啥 <span>👀</span></div>
+    <div id="statsContent">
+      <div class="stats-bar-wrap">
+        <div class="stats-bar-label">
+          <span class="emoji">👦🏻</span><span>小王子</span>
+          <span class="count boy-count" id="boyCount">0 票</span>
+        </div>
+        <div class="stats-bar"><div class="stats-bar-fill boy" id="boyBar" style="width:0%"></div></div>
+      </div>
+      <div class="stats-bar-wrap">
+        <div class="stats-bar-label">
+          <span class="emoji">👧🏻</span><span>小公主</span>
+          <span class="count girl-count" id="girlCount">0 票</span>
+        </div>
+        <div class="stats-bar"><div class="stats-bar-fill girl" id="girlBar" style="width:0%"></div></div>
+      </div>
+      <div class="stats-total" id="statsTotal">共 0 人参与投票</div>
+    </div>
+    <div class="voter-list" id="voterList"></div>
+  </div>
+</div>
+
+<script>
+// ========== CONFIG ==========
+const PRIZE_TEXT = '🎁 恭喜你猜对啦！\n你的直觉太准了！🎊';
+const PARENT_NAMES = '爸爸妈妈';
+const API_BASE = window.location.origin;
+
+let ANSWER = null; // loaded from server
+
+const state = {
+  name: localStorage.getItem('bg_name') || '',
+  vote: localStorage.getItem('bg_vote') || null,
+  revealed: localStorage.getItem('bg_revealed') === 'true'
+};
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', async () => {
+  // Reset support: ?reset=1 clears all local state
+  if (new URLSearchParams(window.location.search).get('reset') === '1') {
+    localStorage.removeItem('bg_name');
+    localStorage.removeItem('bg_vote');
+    localStorage.removeItem('bg_revealed');
+    window.location.href = window.location.origin + window.location.pathname;
+    return;
+  }
+  createSparkles();
+  setupNameInput();
+  // Load answer from server
+  const data = await apiGet('/api/stats');
+  if (data && data.answer) ANSWER = data.answer;
+  if (state.name && state.vote) showConfirmed();
+  if (state.revealed && ANSWER && state.vote) showResult();
+});
+
+// ========== API HELPERS ==========
+async function apiPost(path, data) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  } catch(e) { console.error('API error', e); return null; }
+}
+
+async function apiGet(path) {
+  try {
+    const res = await fetch(API_BASE + path);
+    return await res.json();
+  } catch(e) { console.error('API error', e); return null; }
+}
+
+// ========== SPARKLES ==========
+function createSparkles() {
+  const container = document.getElementById('sparkles');
+  const colors = ['#ff7eb3','#74b9ff','#fdcb6e','#a29bfe','#55efc4','#fab1a0','#ff7675','#dfe6e9'];
+  for (let i = 0; i < 25; i++) {
+    const s = document.createElement('div');
+    s.className = 'sparkle' + (Math.random() > 0.6 ? ' star' : '');
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    s.style.animationDuration = (2 + Math.random() * 4) + 's';
+    s.style.animationDelay = (Math.random() * 5) + 's';
+    container.appendChild(s);
+  }
+}
+
+// ========== NAME ==========
+function setupNameInput() {
+  const input = document.getElementById('inputName');
+  if (state.name) input.value = state.name;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+}
+
+async function submitName() {
+  const input = document.getElementById('inputName');
+  const name = input.value.trim();
+  if (!name) {
+    input.style.borderColor = '#ff7675';
+    input.setAttribute('placeholder', '😄 写个名字吧~');
+    input.style.animation = 'none'; input.offsetHeight; input.style.animation = 'wobble 0.5s ease-in-out';
+    setTimeout(() => { input.style.borderColor = '#f0e0f0'; input.setAttribute('placeholder', '✏️ 你的名字'); }, 1500);
+    return;
+  }
+  state.name = name;
+  localStorage.setItem('bg_name', name);
+
+  // Check if this name already has a vote on server
+  const data = await apiGet('/api/stats');
+  if (data && data.votes) {
+    const existing = data.votes.find(v => v.name === name);
+    if (existing) {
+      // Name already voted, restore and go to confirmed
+      state.vote = existing.vote;
+      localStorage.setItem('bg_vote', existing.vote);
+      showConfirmed();
+      return;
+    }
+  }
+
+  // New voter, go to vote page
+  document.getElementById('voteGreeting').textContent = name + '，来选一个吧！';
+  goToScreen('screen-vote');
+}
+
+// ========== VOTE ==========
+async function castVote(choice) {
+  state.vote = choice;
+  localStorage.setItem('bg_vote', choice);
+
+  // Save to server
+  await apiPost('/api/vote', { name: state.name, vote: choice });
+
+  showConfirmed();
+}
+
+async function showConfirmed() {
+  const icon = state.vote === 'boy' ? '💙' : '💗';
+  const label = state.vote === 'boy' ? '小王子 👦🏻' : '小公主 👧🏻';
+  const cls = state.vote === 'boy' ? 'boy' : 'girl';
+
+  document.getElementById('confirmIcon').textContent = icon;
+  document.getElementById('confirmName').textContent = state.name;
+  const el = document.getElementById('confirmChoice');
+  el.textContent = label; el.className = 'confirm-choice ' + cls;
+
+  // Get vote time from server
+  const statsData = await apiGet('/api/stats');
+  let timeStr = '';
+  if (statsData && statsData.votes) {
+    const myVote = statsData.votes.find(v => v.name === state.name);
+    if (myVote) {
+      const t = new Date(myVote.time);
+      timeStr = `${t.getMonth()+1}月${t.getDate()}日 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+    }
+  }
+  if (!timeStr) {
+    const now = new Date();
+    timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+  document.getElementById('confirmStamp').textContent = `投票时间：${timeStr}`;
+
+  const btn = document.getElementById('btnReveal');
+  const box = document.getElementById('waitingBox');
+  if (ANSWER) {
+    btn.style.display = 'inline-block';
+    if (box) box.style.display = 'none';
+  } else {
+    btn.style.display = 'none';
+    if (box) box.style.display = 'block';
+    // Poll for answer every 30s
+    pollForAnswer();
+  }
+
+  // Load stats on confirmed page
+  await loadStatsConfirmed();
+  // Load blessings
+  await loadBlessings();
+
+  goToScreen('screen-confirmed');
+}
+
+function changeVote() {
+  localStorage.removeItem('bg_vote'); localStorage.removeItem('bg_revealed');
+  state.vote = null; state.revealed = false;
+  document.getElementById('voteGreeting').textContent = state.name + '，改个选择？';
+  goToScreen('screen-vote');
+}
+
+// ========== REVEAL ==========
+function startReveal() {
+  if (!ANSWER) return;
+  goToScreen('screen-countdown');
+  let count = 3;
+  const el = document.getElementById('countdownNum');
+  el.textContent = count;
+
+  const interval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      el.textContent = count;
+      el.style.animation = 'none'; el.offsetHeight;
+      el.style.animation = 'countBoom 0.7s cubic-bezier(0.34,1.56,0.64,1)';
+      const ring = document.querySelector('.countdown-ring');
+      ring.style.animation = 'none'; ring.offsetHeight;
+      ring.style.animation = 'ringPulse 0.9s ease-out';
+    } else {
+      clearInterval(interval);
+      state.revealed = true;
+      localStorage.setItem('bg_revealed', 'true');
+      showResult();
+    }
+  }, 900);
+}
+
+async function showResult() {
+  const correct = state.vote === ANSWER;
+  const answerEmoji = ANSWER === 'boy' ? '👦🏻' : '👧🏻';
+  const answerLabel = ANSWER === 'boy' ? '小王子' : '小公主';
+
+  document.getElementById('resultEmoji').textContent = correct ? '🎉' : '😊';
+  const title = document.getElementById('resultTitle');
+  title.textContent = correct ? '你猜对啦！太厉害了！' : '哎呀，没猜对~';
+  title.className = 'result-title ' + (correct ? 'result-correct' : 'result-wrong');
+
+  document.getElementById('resultAnswer').innerHTML =
+    `宝宝是 <strong>${answerEmoji} ${answerLabel}</strong>！`;
+
+  const body = document.getElementById('resultBody');
+  if (correct) {
+    body.innerHTML = `<div class="prize-box">
+      <div class="prize-title">🏆🎉</div>
+      <div class="prize-text">${PRIZE_TEXT.replace(/\n/g,'<br>')}</div>
+    </div>`;
+    launchConfetti();
+  } else {
+    const voted = state.vote === 'boy' ? '小王子' : '小公主';
+    body.innerHTML = `<div class="consolation-box">
+      <div class="consolation-emoji">💝🎀🧸</div>
+      <div class="consolation-text">
+        虽然你猜的是${voted}<br>
+        但不管男孩女孩<br>
+        都是${PARENT_NAMES}最珍贵的宝贝！<br>
+        一样可爱 一样值得期待 🥰
+      </div>
+    </div>`;
+  }
+
+  // Load stats
+  await loadStats();
+
+  goToScreen('screen-result');
+}
+
+// ========== STATS (Confirmed page) ==========
+async function loadStatsConfirmed() {
+  const data = await apiGet('/api/stats');
+  if (!data) return;
+
+  const votes = data.votes || [];
+  const boyVotes = votes.filter(v => v.vote === 'boy');
+  const girlVotes = votes.filter(v => v.vote === 'girl');
+  const total = votes.length;
+  const boyPct = total ? Math.round(boyVotes.length / total * 100) : 50;
+  const girlPct = total ? 100 - boyPct : 50;
+
+  document.getElementById('cBoyCount').textContent = boyVotes.length + ' 票';
+  document.getElementById('cGirlCount').textContent = girlVotes.length + ' 票';
+  document.getElementById('cStatsTotal').textContent = `共 ${total} 人参与投票`;
+
+  setTimeout(() => {
+    document.getElementById('cBoyBar').style.width = Math.max(boyPct, 8) + '%';
+    document.getElementById('cGirlBar').style.width = Math.max(girlPct, 8) + '%';
+  }, 300);
+
+  const list = document.getElementById('cVoterList');
+  list.innerHTML = '';
+  votes.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'voter-item';
+    div.innerHTML = `
+      <span class="voter-emoji">${v.vote === 'boy' ? '👦🏻' : '👧🏻'}</span>
+      <span class="voter-name">${escHtml(v.name)}</span>
+      <span class="voter-choice ${v.vote}">${v.vote === 'boy' ? '小王子' : '小公主'}</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ========== STATS (Result page) ==========
+async function loadStats() {
+  const data = await apiGet('/api/stats');
+  if (!data) return;
+
+  const votes = data.votes || [];
+  const boyVotes = votes.filter(v => v.vote === 'boy');
+  const girlVotes = votes.filter(v => v.vote === 'girl');
+  const total = votes.length;
+  const boyPct = total ? Math.round(boyVotes.length / total * 100) : 50;
+  const girlPct = total ? 100 - boyPct : 50;
+
+  document.getElementById('boyCount').textContent = boyVotes.length + ' 票';
+  document.getElementById('girlCount').textContent = girlVotes.length + ' 票';
+  document.getElementById('statsTotal').textContent = `共 ${total} 人参与投票`;
+
+  // Animate bars after a short delay
+  setTimeout(() => {
+    document.getElementById('boyBar').style.width = Math.max(boyPct, 8) + '%';
+    document.getElementById('girlBar').style.width = Math.max(girlPct, 8) + '%';
+  }, 300);
+
+  // Voter list
+  const list = document.getElementById('voterList');
+  list.innerHTML = '';
+  votes.forEach(v => {
+    const isWinner = v.vote === ANSWER;
+    const div = document.createElement('div');
+    div.className = 'voter-item';
+    div.innerHTML = `
+      <span class="voter-emoji">${v.vote === 'boy' ? '👦🏻' : '👧🏻'}</span>
+      <span class="voter-name">${escHtml(v.name)}</span>
+      <span class="voter-choice ${v.vote}">${v.vote === 'boy' ? '小王子' : '小公主'}</span>
+      ${isWinner ? '<span class="voter-winner">🏆</span>' : ''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ========== BLESSINGS ==========
+const BLESSING_AVATARS = ['🧸','🎀','🍼','💕','🌟','🎉','🌸','🎈','💐','🦄','🐰','🌟'];
+
+async function loadBlessings() {
+  const data = await apiGet('/api/blessings');
+  if (!data || !data.blessings) return;
+  const chat = document.getElementById('blessingChat');
+  const empty = document.getElementById('blessingEmpty');
+  if (!chat) return;
+
+  // Keep input area, clear only bubbles
+  chat.querySelectorAll('.blessing-bubble').forEach(el => el.remove());
+
+  if (data.blessings.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Get votes to determine avatar by vote
+  const statsData = await apiGet('/api/stats');
+  const voteMap = {};
+  if (statsData && statsData.votes) {
+    statsData.votes.forEach(v => { voteMap[v.name] = v.vote; });
+  }
+
+  data.blessings.forEach((b, i) => {
+    const div = document.createElement('div');
+    div.className = 'blessing-bubble';
+    const vote = voteMap[b.name];
+    const avatar = vote === 'girl' ? '👚' : vote === 'boy' ? '👕' : BLESSING_AVATARS[i % BLESSING_AVATARS.length];
+    const time = new Date(b.time);
+    const timeStr = `${time.getMonth()+1}/${time.getDate()} ${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`;
+    div.innerHTML = `
+      <div class="bb-header">
+        <span class="bb-avatar">${avatar}</span>
+        <span class="bb-name">${escHtml(b.name)}</span>
+        <span class="bb-time">${timeStr}</span>
+      </div>
+      <div class="bb-text">${escHtml(b.text)}</div>
+    `;
+    chat.appendChild(div);
+  });
+
+  // Scroll to bottom
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function submitBlessing() {
+  const input = document.getElementById('blessingInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.name) return;
+
+  const btn = document.getElementById('blessingSend');
+  btn.disabled = true;
+  await apiPost('/api/blessing', { name: state.name, text });
+  input.value = '';
+  btn.disabled = false;
+  await loadBlessings();
+}
+
+// Auto-resize textarea
+(function(){
+  document.addEventListener('input', e => {
+    if (e.target.id === 'blessingInput') {
+      e.target.style.height = 'auto';
+      e.target.style.height = Math.min(e.target.scrollHeight, 80) + 'px';
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.id === 'blessingInput' && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitBlessing();
+    }
+  });
+})();
+
+// ========== POLL FOR ANSWER ==========
+function pollForAnswer() {
+  setInterval(async () => {
+    if (ANSWER) return;
+    const data = await apiGet('/api/stats');
+    if (data && data.answer) {
+      ANSWER = data.answer;
+      const btn = document.getElementById('btnReveal');
+      const box = document.getElementById('waitingBox');
+      if (btn) btn.style.display = 'inline-block';
+      if (box) box.style.display = 'none';
+    }
+  }, 30000);
+}
+
+// ========== SCREEN NAV ==========
+function goToScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ========== CONFETTI ==========
+function launchConfetti() {
+  const c = document.getElementById('confetti');
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+
+  const colors = ['#ff7eb3','#74b9ff','#fdcb6e','#a29bfe','#55efc4','#fab1a0','#ff7675','#2ed573','#ff4757','#ffa502','#d63031','#e17055'];
+  const particles = [];
+
+  for (let i = 0; i < 200; i++) {
+    const shape = ['rect','rect','circle','star'][Math.floor(Math.random()*4)];
+    particles.push({
+      x: c.width / 2 + (Math.random() - 0.5) * 200,
+      y: c.height / 2,
+      vx: (Math.random() - 0.5) * 15,
+      vy: -8 - Math.random() * 12,
+      size: 4 + Math.random() * 8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 15,
+      gravity: 0.15 + Math.random() * 0.1,
+      opacity: 1,
+      shape: shape
+    });
+  }
+
+  let frame = 0;
+  function animate() {
+    if (frame > 250) { ctx.clearRect(0,0,c.width,c.height); return; }
+    ctx.clearRect(0,0,c.width,c.height);
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.vy += p.gravity;
+      p.y += p.vy;
+      p.vx *= 0.99;
+      p.rotation += p.rotSpeed;
+      if (frame > 180) p.opacity = Math.max(0, p.opacity - 0.02);
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.shape === 'star') {
+        drawStar(ctx, 0, 0, 5, p.size / 2, p.size / 4);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+      }
+      ctx.restore();
+    });
+    frame++;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+  let rot = Math.PI / 2 * 3;
+  const step = Math.PI / spikes;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerR);
+  for (let i = 0; i < spikes; i++) {
+    ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+    rot += step;
+    ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+    rot += step;
+  }
+  ctx.lineTo(cx, cy - outerR);
+  ctx.closePath();
+}
+
+window.addEventListener('resize', () => {
+  const c = document.getElementById('confetti');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
